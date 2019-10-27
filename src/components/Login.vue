@@ -66,7 +66,13 @@ export default {
               
             }else{
               firebase.firestore().collection('users').add(body).then((res) => {
-                //
+                firebase.firestore().collection("votes").add({
+                    user: body.uid,
+                    memes_voted: {
+                      ups: ['0'],
+                      downs: ['0']
+                    }
+                });
                 // this.$router.replace('Home');
               }).catch((err)=> {
                  console.error("Error adding document: ", err);
@@ -76,7 +82,6 @@ export default {
           }).catch((err)=>{
              console.error("Error : ", err);
           });
-          console.log('hhh');
           this.$router.replace('Home');
       }).catch((err) => {
         alert('err ' + err.message)
