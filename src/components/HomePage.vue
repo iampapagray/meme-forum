@@ -14,14 +14,14 @@
             </div>
             <div class="row">
                 <div class="col-md-12 text-right mt-3">
-                    <button type="button" class="btn btn-yellow">Yellow</button>
+                    <button type="button" class="btn btn-yellow">Upload Meme</button>
                 </div>
             </div>
             <hr>
             <div class="row mt-5 " v-for="meme in memes" :key="meme.id">
                 <div class="col-md-1 text-left"> <!-- buttons -->
                     <div class="upvote mt-5"></div>
-                    <strong> {{ meme.totalComments }} </strong>
+                    <strong class="text-center"> {{ meme.votes }} </strong>
                     <div class="downvote"></div>
                 </div>
                 <div class="col-md-5 text-left">
@@ -32,8 +32,7 @@
                     <span class="mb-5">{{ meme.totalComments }} Comments</span>
                     <div class="mt-4" style="display: flex">
                         <img :src="user.photoURL" class=" z-depth-1 rounded-circle" alt="image" height="50" width="50">
-                        <p class="pl-3 pt-3">Posted 3 hours ago</p>
-                        <timeago :since="meme.created" :auto-update="60" :max-time="60"></timeago>
+                        <p class="pl-3 pt-3">Posted {{ meme.created | moment("from", "now")   }}</p>
                     </div>
                 </div>
             </div>
@@ -54,8 +53,13 @@ export default {
         }
     },
     created(){
-        this.user = JSON.parse(localStorage.getItem('user'));
-        console.log('user in', JSON.parse(localStorage.getItem('user')));
+        let usr = firebase.auth().currentUser;
+        this.user.uid = usr.uid
+        this.user.displayName = usr.displayName
+        this.user.email = usr.email
+        this.user.photoURL = usr.photoURL
+
+        console.log('user in', this.user);
 
         // fetchMemes
         firebase.firestore().collection('memes').get()
@@ -68,8 +72,9 @@ export default {
             bundle.id =  doc.id;
             bundle.caption = data.caption
             bundle.image = data.image
-            bundle.created = Date.parse(data.created_at.seconds)
+            bundle.created = data.created_at.seconds
             bundle.totalComments = data.comments.total
+            bundle.votes = data.votes
 
             this.memes.push(bundle);
             // commit('setLoadedMembers',bundle);
@@ -82,10 +87,10 @@ export default {
     },
     methods: {
         logout() {
-        console.log('logging out')
-        firebase.auth().signOut().then((res) => {
-            this.$router.replace('/');
-        })
+            console.log('logging out')
+            firebase.auth().signOut().then((res) => {
+                this.$router.replace('/');
+            })
         },
     }
 }

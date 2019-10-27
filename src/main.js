@@ -6,16 +6,7 @@ import Vue from 'vue';
 import App from './App';
 import router from './router';
 import firebase from 'firebase';
-import VueTimeago from 'vue-timeago';
-
-Vue.use(VueTimeago, {
-  name: 'timeago',
-  locale: 'en-US',
-  // locales: {
-  //   // you will need json-loader in webpack 1
-  //   'en-US': require('vue-timeago/locales/en-US.json')
-  // }
-});
+Vue.use(require('vue-moment'));
 
 Vue.config.productionTip = false;
 

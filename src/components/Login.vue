@@ -7,7 +7,7 @@
 
     <div class="container">
       <div class="row">
-        <div class="col-md-4 offset-md-4">
+        <div class="col-md-4 offset-md-4"> 
           <div class="card" style="height: 50vh">
             <div class="card-body align-middle">
               <h2 class="card-title mt-5"><a >Meme Forum</a></h2>
@@ -40,9 +40,44 @@ export default {
       console.log('logging in')
       const provider = new firebase.auth.GoogleAuthProvider();
       firebase.auth().signInWithPopup(provider).then((result) => {
-        // console.log(result);
-        localStorage.setItem('user', JSON.stringify(result.user));
-        this.$router.replace('Home');
+        let body = {}
+        body.uid = result.user.uid
+        body.displayName = result.user.displayName
+        body.email = result.user.email
+        body.photoURL = result.user.photoURL
+
+        firebase.firestore().collection("users").where("email", "==", result.user.email).get()
+          .then((querySnapshot)=>{
+            if(querySnapshot.size > 0){
+              var docRef = firebase.firestore().collection("users").doc(querySnapshot.docs[0].id);
+
+              return docRef.update({
+                  photoURL: body.photoURL
+              })
+              .then(function() {
+                  console.log("Document successfully updated!");
+                  // this.$router.replace('Home');
+              })
+              .catch(function(error) {
+                  // The document probably doesn't exist.
+                  console.error("Error updating document: ", error);
+                  // this.$router.replace('Home');
+              });
+              
+            }else{
+              firebase.firestore().collection('users').add(body).then((res) => {
+                //
+                // this.$router.replace('Home');
+              }).catch((err)=> {
+                 console.error("Error adding document: ", err);
+              });
+            }
+            
+          }).catch((err)=>{
+             console.error("Error : ", err);
+          });
+          console.log('hhh');
+          this.$router.replace('Home');
       }).catch((err) => {
         alert('err ' + err.message)
       })
