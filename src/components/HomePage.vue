@@ -115,7 +115,6 @@ export default {
             });
         },
         upvote(memId){
-            console.log('up', memId)
             if(!this.upvotes.includes(memId) && !this.downvotes.includes(memId)){
                 // add +1 votes and record in ups
                 var ref = firebase.firestore().collection("memes").doc(memId);
@@ -137,24 +136,120 @@ export default {
                     // The document probably doesn't exist.
                     console.error("Error updating document: ", error);
                 });
-
             }else if(!this.upvotes.includes(memId) && this.downvotes.includes(memId)){
                 // remove record from down, add +2 votes and record in ups
-
+                var ref = firebase.firestore().collection("memes").doc(memId);
+                var voteRef = firebase.firestore().collection("votes").doc(this.myvotes);
+                return ref.update({
+                  votes: firebase.firestore.FieldValue.increment(2)
+                })
+                .then(() => {
+                    this.fetchMemes();
+                    return voteRef.update({
+                        "memes_voted.ups": firebase.firestore.FieldValue.arrayUnion(memId),
+                        "memes_voted.downs": firebase.firestore.FieldValue.arrayRemove(memId)
+                    })
+                    .then(()=>{
+                        this.fetchVotes();
+                    });
+                    console.log("Document successfully updated!");
+                })
+                .catch((error) => {
+                    // The document probably doesn't exist.
+                    console.error("Error updating document: ", error);
+                });
             }else{
-                // do nothing
+                // do resset
+                var ref = firebase.firestore().collection("memes").doc(memId);
+                var voteRef = firebase.firestore().collection("votes").doc(this.myvotes);
+                
+                return ref.update({
+                  votes: firebase.firestore.FieldValue.increment(-1)
+                })
+                .then(() => {
+                    this.fetchMemes();
+                    return voteRef.update({
+                        "memes_voted.ups": firebase.firestore.FieldValue.arrayRemove(memId),
+                    })
+                    .then(()=>{
+                        this.fetchVotes();
+                    });
+                    console.log("Document successfully updated!");
+                })
+                .catch((error) => {
+                    // The document probably doesn't exist.
+                    console.error("Error updating document: ", error);
+                });
             }
         },
         downvote(memId){
             console.log('down', memId)
             if(!this.upvotes.includes(memId) && !this.downvotes.includes(memId)){
                 // subtract -1 votes and record in downs
-
+                var ref = firebase.firestore().collection("memes").doc(memId);
+                var voteRef = firebase.firestore().collection("votes").doc(this.myvotes);
+                return ref.update({
+                  votes: firebase.firestore.FieldValue.increment(-1)
+                })
+                .then(() => {
+                    this.fetchMemes();
+                    return voteRef.update({
+                        "memes_voted.downs": firebase.firestore.FieldValue.arrayUnion(memId)
+                    })
+                    .then(()=>{
+                        this.fetchVotes();
+                    });
+                    console.log("Document successfully updated!");
+                })
+                .catch((error) => {
+                    // The document probably doesn't exist.
+                    console.error("Error updating document: ", error);
+                });
             }else if(this.upvotes.includes(memId) && !this.downvotes.includes(memId)){
                 // remove record from ups, subtract -2 votes and record in downs
+                var ref = firebase.firestore().collection("memes").doc(memId);
+                var voteRef = firebase.firestore().collection("votes").doc(this.myvotes);
 
+                return ref.update({
+                  votes: firebase.firestore.FieldValue.increment(-2)
+                })
+                .then(() => {
+                    this.fetchMemes();
+                    return voteRef.update({
+                        "memes_voted.ups": firebase.firestore.FieldValue.arrayRemove(memId),
+                        "memes_voted.downs": firebase.firestore.FieldValue.arrayUnion(memId)
+                    })
+                    .then(()=>{
+                        this.fetchVotes();
+                    });
+                    console.log("Document successfully updated!");
+                })
+                .catch((error) => {
+                    // The document probably doesn't exist.
+                    console.error("Error updating document: ", error);
+                });
             }else{
-                // do nothing
+                // do reset
+                var ref = firebase.firestore().collection("memes").doc(memId);
+                var voteRef = firebase.firestore().collection("votes").doc(this.myvotes);
+                
+                return ref.update({
+                  votes: firebase.firestore.FieldValue.increment(1)
+                })
+                .then(() => {
+                    this.fetchMemes();
+                    return voteRef.update({
+                        "memes_voted.downs": firebase.firestore.FieldValue.arrayRemove(memId),
+                    })
+                    .then(()=>{
+                        this.fetchVotes();
+                    });
+                    console.log("Document successfully updated!");
+                })
+                .catch((error) => {
+                    // The document probably doesn't exist.
+                    console.error("Error updating document: ", error);
+                });
             }
         },
         logout() {
